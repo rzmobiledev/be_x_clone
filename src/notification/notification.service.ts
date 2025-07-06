@@ -23,7 +23,7 @@ export class NotificationService {
     notif: NotificationItem,
   ): Promise<NotificationItem | null> {
     return this.notificationService
-      .findByIdAndUpdate(id, notif, { new: true })
+      .findOneAndUpdate({ id }, notif, { new: true })
       .exec();
   }
 

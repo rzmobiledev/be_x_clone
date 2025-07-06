@@ -34,7 +34,7 @@ export class UserItem extends Document {
   followers: [];
 
   @Prop({ type: [mongoose.Schema.Types.ObjectId], ref: 'User' })
-  following: [];
+  following: string[];
 
   @Prop({ default: Date.now })
   createdAt: Date;

@@ -14,7 +14,7 @@ export class PostService {
   }
 
   async findOne(id: string): Promise<PostItem | null> {
-    return this.postItem.findById(id).exec();
+    return this.postItem.findOne({ clerkId: id }).exec();
   }
 
   async create(post: PostItem): Promise<PostItem> {
@@ -23,10 +23,12 @@ export class PostService {
   }
 
   async update(id: string, post: PostItem): Promise<PostItem | null> {
-    return this.postItem.findByIdAndUpdate(id, post, { new: true }).exec();
+    return this.postItem
+      .findOneAndUpdate({ clerkId: id }, post, { new: true })
+      .exec();
   }
 
   async delete(id: string) {
-    return this.postItem.findByIdAndDelete(id);
+    return this.postItem.findOneAndDelete({ id });
   }
 }
