@@ -29,6 +29,7 @@ export class HttpExceptionHandler implements ExceptionFilter {
     };
     if (exception instanceof HttpException) {
       respObj.statusCode = exception.getStatus();
+      respObj.response = exception.getResponse();
     } else if (exception instanceof Error) {
       respObj.statusCode = 422;
       respObj.response = exception.message.replaceAll(/\n/g, '');

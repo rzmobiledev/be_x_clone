@@ -1,13 +1,17 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { NotificationItem } from 'src/utils/schemas/notification.model';
+import { UserService } from 'src/user/user.service';
+import { UserItem } from 'src/utils/schemas/user.model';
 
 @Injectable()
 export class NotificationService {
   constructor(
     @InjectModel(NotificationItem.name)
     private readonly notificationService: Model<NotificationItem>,
+    @Inject(forwardRef(() => UserService))
+    private readonly userService: UserService,
   ) {}
 
   async findAll(): Promise<NotificationItem[]> {
@@ -15,7 +19,12 @@ export class NotificationService {
   }
 
   async findOne(id: string): Promise<NotificationItem | null> {
-    return this.notificationService.findById(id).exec();
+    return this.notificationService
+      .findOne({ to: id })
+      .sort({ createdAt: -1 })
+      .populate('from', 'userName firstName lastName profilePicture')
+      .populate('post', 'content image')
+      .populate('comment', 'content');
   }
 
   async update(
@@ -32,7 +41,13 @@ export class NotificationService {
     return created.save();
   }
 
-  async delete(id: string) {
-    return this.notificationService.findByIdAndDelete(id).exec();
+  async delete(notifId: string, userId: string) {
+    return this.notificationService
+      .findOneAndDelete({ _id: notifId, to: userId })
+      .exec();
+  }
+
+  async userFindClerkById(clerkId: string): Promise<UserItem | null> {
+    return await this.userService.findByClerkId(clerkId);
   }
 }

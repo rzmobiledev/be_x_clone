@@ -9,22 +9,22 @@ import {
   Put,
   Req,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserItem } from 'src/utils/schemas/user.model';
-import { Request, Response } from 'express';
-import { NotificationService } from 'src/notification/notification.service';
-import { NotificationItem } from 'src/utils/schemas/notification.model';
+import { Response } from 'express';
 import { TReqUser } from 'src/utils/commons/express.http.schema';
+import { Public } from 'src/clerk/decorator/public.decorator';
+import { ArcjetGuard } from 'src/arcjet/arcjet.guard';
 
+@UseGuards(ArcjetGuard)
 @Controller('profile')
 export class UserController {
-  constructor(
-    private readonly userService: UserService,
-    private readonly notification: NotificationService,
-  ) {}
+  constructor(private readonly userService: UserService) {}
 
   @Get()
+  @Public()
   async findAll(): Promise<UserItem[]> {
     return this.userService.findAll();
   }
@@ -101,11 +101,7 @@ export class UserController {
     } else {
       await this.userService.following(currentUser._id as string, targetUserId);
       await this.userService.following(targetUserId, currentUser._id as string);
-      await this.notification.create({
-        from: currentUser._id,
-        to: targetUser._id,
-        type: 'follow',
-      } as NotificationItem);
+      await this.userService.createNotification(currentUser, targetUser);
     }
     res.status(HttpStatus.OK).json({
       message: isFollowing
